@@ -1,0 +1,145 @@
+{
+ "descricao": "Execução real gravada em 17/11/2026 com o modelo gemini-flash-lite-latest (Google). As ferramentas são recalculadas ao vivo a partir dos mesmos argumentos; a resposta é a que o modelo escreveu.",
+ "data": "2026-11-17",
+ "provedor": "gemini",
+ "modelo": "gemini-flash-lite-latest",
+ "duracao_s": 87.6,
+ "pergunta": "O que piorou na última semana e onde devo agir primeiro?",
+ "passos": [
+  {
+   "ferramenta": "detectar_anomalias",
+   "argumentos": {
+    "dimensao": "data",
+    "metrica": "taxa_no_prazo"
+   }
+  },
+  {
+   "ferramenta": "detectar_anomalias",
+   "argumentos": {
+    "metrica": "taxa_cancelamento",
+    "dimensao": "data"
+   }
+  },
+  {
+   "ferramenta": "detectar_anomalias",
+   "argumentos": {
+    "metrica": "taxa_no_prazo",
+    "dimensao": "restaurante"
+   }
+  },
+  {
+   "ferramenta": "detectar_anomalias",
+   "argumentos": {
+    "dimensao": "restaurante",
+    "metrica": "taxa_cancelamento"
+   }
+  },
+  {
+   "ferramenta": "detectar_anomalias",
+   "argumentos": {
+    "dimensao": "regiao_faixa_horaria",
+    "metrica": "taxa_no_prazo"
+   }
+  },
+  {
+   "ferramenta": "detectar_anomalias",
+   "argumentos": {
+    "metrica": "taxa_no_prazo",
+    "dimensao": "regiao"
+   }
+  },
+  {
+   "ferramenta": "detectar_anomalias",
+   "argumentos": {
+    "excluir_datas": [
+     "2026-11-10"
+    ],
+    "dimensao": "restaurante",
+    "metrica": "taxa_no_prazo"
+   }
+  },
+  {
+   "ferramenta": "detectar_anomalias",
+   "argumentos": {
+    "excluir_datas": [
+     "2026-11-10"
+    ],
+    "dimensao": "regiao",
+    "metrica": "taxa_no_prazo"
+   }
+  },
+  {
+   "ferramenta": "decompor_tempo_entrega",
+   "argumentos": {
+    "restaurante": "Sabor da Vila Burger",
+    "janela_dias": 7
+   }
+  },
+  {
+   "ferramenta": "decompor_tempo_entrega",
+   "argumentos": {
+    "hora_fim": 22,
+    "janela_dias": 7,
+    "regiao": "Tatuapé",
+    "hora_inicio": 19
+   }
+  },
+  {
+   "ferramenta": "decompor_tempo_entrega",
+   "argumentos": {
+    "janela_dias": 7,
+    "hora_fim": 22,
+    "regiao": "Vila Mariana",
+    "hora_inicio": 19
+   }
+  },
+  {
+   "ferramenta": "analisar_avaliacoes",
+   "argumentos": {
+    "restaurante": "Sabor da Vila Burger",
+    "janela_dias": 7
+   }
+  },
+  {
+   "ferramenta": "analisar_avaliacoes",
+   "argumentos": {
+    "regiao": "Tatuapé",
+    "janela_dias": 7
+   }
+  },
+  {
+   "ferramenta": "analisar_avaliacoes",
+   "argumentos": {
+    "janela_dias": 7,
+    "restaurante": "Sushi Hikari"
+   }
+  },
+  {
+   "ferramenta": "calcular_kpis",
+   "argumentos": {
+    "restaurante": "Sabor da Vila Burger",
+    "data_inicio": "2026-11-08",
+    "data_fim": "2026-11-14"
+   }
+  },
+  {
+   "ferramenta": "calcular_kpis",
+   "argumentos": {
+    "hora_inicio": 19,
+    "regiao": "Tatuapé",
+    "hora_fim": 22,
+    "data_fim": "2026-11-14",
+    "data_inicio": "2026-11-08"
+   }
+  },
+  {
+   "ferramenta": "calcular_kpis",
+   "argumentos": {
+    "data_inicio": "2026-11-08",
+    "data_fim": "2026-11-14",
+    "restaurante": "Sushi Hikari"
+   }
+  }
+ ],
+ "resposta": "**Resumo:** Na última semana (08/11 a 14/11), a operação sofreu quedas críticas na pontualidade de entregas e um salto expressivo nos cancelamentos. O problema concentra-se em gargalos internos no restaurante *Sabor da Vila Burger*, em falhas logísticas (espera por entregadores) no jantar da região do *Tatuapé*, e em cancelamentos em massa por ruptura de estoque no *Sushi Hikari*.\n\n---\n\n### O que encontrei:\n* **Dia Atípico Crítico (10/11):** A taxa de entrega no prazo caiu para **35,7%** (vs. linha de base de 89,2%, com z-score de -37,2). Excluindo esse dia, as regiões de Vila Mariana e Tatuapé continuam apresentando forte degradação na pontualidade.\n* ***Sabor da Vila Burger* (Gargalo Operacional):**\n  * A taxa no prazo despencou de **90,3% para 10,0%**.\n  * O tempo de preparo saltou de **17,7 min para 33,3 min** (responsável por 89% do atraso total).\n  * 41,2% das avaliações recentes são negativas, com forte reclamação de comida fria e murcha devido à demora.\n* **Jantar no Tatuapé (Gargalo Logístico):**\n  * No horário de pico (19h-22h), a taxa no prazo caiu de **88,4% para 20,7%**.\n  * A espera por entregador disparou de **6,1 min para 17,9 min** (responsável por 97% do atraso).\n* ***Sushi Hikari* (Taxa de Cancelamento Alarmante):**\n  * A taxa de cancelamento disparou para **19,0%** (vs. linha de base histórica de 2,5%, z-score de 10.0).\n  * 100% das avaliações negativas recentes citam o mesmo problema: itens esgotados que continuam disponíveis para venda no app, gerando cancelamentos tardios após o pedido.\n\n---\n\n### Causa provável:\n1. **Sabor da Vila Burger:** Sobrecarga na cozinha ou falha de capacidade produtiva durante os horários de pico, fazendo com que os pedidos fiquem parados na bancada aguardando montagem/preparo, resultando em comida fria.\n2. **Tatuapé (Jantar):** Desbalanceamento entre a oferta de entregadores logísticos e a demanda de pedidos no jantar, gerando longas filas de espera na retirada.\n3. **Sushi Hikari:** Falta de atualização de estoque e ruptura de insumos críticos pelo restaurante, que aceita pedidos de itens indisponíveis e cancela posteriormente.\n\n---\n\n### Ações recomendadas:\n\n1. **Restaurante *Sabor da Vila Burger* (Prioridade Alta)**\n   * *Ação:* Enviar o time de operações/suporte ao parceiro para revisar o cardápio, limitar o fluxo de pedidos simultâneos (throttle) ou pausar temporariamente o restaurante se a cozinha não absorver a demanda.\n   * *Responsável:* Time de Operações / Gerenciamento de Contas de Restaurantes.\n\n2. **Logística no *Tatuapé* (Prioridade Alta)**\n   * *Ação:* Realizar redistribuição de frota e incentivos de tarifa dinâmica (boost) para atrair mais entregadores para a região do Tatuapé no horário de jantar (19h-22h).\n   * *Responsável:* Time de Logística / Operações de Frota.\n\n3. **Restaurante *Sushi Hikari* (Prioridade Média/Alta)**\n   * *Ação:* Exigir que o restaurante faça a gestão de ruptura em tempo real e suspender temporariamente os itens mais problemáticos até que o estoque seja normalizado.\n   * *Responsável:* Time de Suporte e Qualidade de Parceiros.\n\n---\n\n### Impacto estimado:\n* ***Sabor da Vila Burger*:** Afetou **166 pedidos** e um faturamento de **R$ 8.051,05** na última semana, gerando uma experiência altamente degradada (nota 3,63).\n* **Jantar no *Tatuapé*:** Impactou **189 pedidos** no horário de pico, totalizando **R$ 8.842,76** em faturamento com atrasos severos.\n* ***Sushi Hikari*:** Afetou **168 pedidos** (faturamento de **R$ 12.150,59**), com quase 1 a cada 5 pedidos sendo cancelado na ponta do consumidor."
+}

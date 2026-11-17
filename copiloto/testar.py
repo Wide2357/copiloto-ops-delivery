@@ -15,6 +15,7 @@ import json
 import sys
 
 from .agente import PROVEDORES, Agente, criar_backend
+from .verificador import verificar
 
 PERGUNTA_PADRAO = "O que piorou na última semana e onde devo agir primeiro?"
 
@@ -63,6 +64,10 @@ def main() -> None:
     print(r.texto)
     print("─" * 70)
     print(f"✅ {len(r.passos)} ferramentas em {r.duracao_s}s" + (" (atingiu o limite de passos)" if r.atingiu_limite else ""))
+    v = verificar(r.texto, [p.resultado for p in r.passos])
+    print(f"🔎 Verificação: {v.resumo()}")
+    for n in v.nao_encontrados:
+        print(f"   ⚠️  {n.texto!r} não aparece nos dados → \"…{n.contexto}…\"")
     if not r.passos:
         print("⚠️  O agente respondeu sem consultar nenhuma ferramenta: os números podem ser inventados. Tente outro modelo.")
 

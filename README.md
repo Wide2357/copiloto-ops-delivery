@@ -2,9 +2,21 @@
 
 **Um agente de IA que investiga a operação de delivery como um analista sênior faria:** ele descobre o que piorou, separa causa de restaurante, de logística e de evento externo, traz a voz do cliente e recomenda ações por time, sempre com números tirados dos dados, nunca inventados.
 
-> ✅ testes automatizados no GitHub Actions &nbsp;·&nbsp; 🧠 funciona com Claude, GPT ou Gemini
+> ✅ testes automatizados no GitHub Actions &nbsp;·&nbsp; 🧠 funciona com Claude, GPT ou Gemini &nbsp;·&nbsp; 🔎 verifica os próprios números
 
-![Painel](docs/painel.png)
+![Demonstração: o agente investiga a semana e todos os números da resposta são conferidos com os dados](docs/demo.gif)
+
+### Resultado em uma execução real
+
+Pergunta: *"O que piorou na última semana e onde devo agir primeiro?"*, com o Gemini Flash-Lite:
+
+| | |
+|---|---|
+| Problemas plantados encontrados | **4 de 4** |
+| Ferramentas chamadas | 17 (em ~88 s) |
+| Números da resposta conferidos com os dados | **25 de 25** (verificação automática) |
+
+Essa execução fica gravada no app: quem não tem chave de API pode clicar em **"Ver uma execução real do agente"** e acompanhar a investigação passo a passo. As ferramentas rodam de verdade; só a resposta do modelo é reproduzida.
 
 ---
 
@@ -54,19 +66,21 @@ flowchart LR
 - **Seguro.** O SQL é somente leitura, com dupla proteção: validação do comando + conexão SQLite em modo `ro`. Pedidos como "apague os cancelados" são recusados.
 - **Multi-provedor.** O mesmo loop de agente funciona com a API nativa da Anthropic (Claude) e com qualquer API compatível com OpenAI (GPT, Gemini, Groq, OpenRouter, Ollama).
 - **Funciona sem chave de API.** O painel e o relatório semanal em "modo sem IA" rodam offline. Esse modo também serve de *baseline* para comparar com o agente.
+- **Verifica os próprios números.** Depois de cada resposta, um verificador extrai todos os números (percentuais, R$, minutos, z-scores) e procura cada um nos resultados das ferramentas. O que não for encontrado é sinalizado para revisão: pode ser uma conta feita pelo modelo ou uma alucinação. Na execução real acima, 25 de 25 conferiram, e o teste automatizado confirma que números adulterados são pegos.
 - **Limite de passos.** O agente tem no máximo 10 chamadas de ferramenta por pergunta, para não entrar em loop nem gastar tokens à toa.
 
 ## Qualidade: testes e avaliações
 
-**Testes (`pytest`, 26 testes, rodam no CI a cada push):**
+**Testes (`pytest`, 30 testes, rodam no CI a cada push):**
 - as ferramentas encontram cada um dos 4 problemas plantados;
 - a decomposição aponta a causa certa (preparo × entregador);
 - o relatório offline encontra **exatamente 4 problemas, sem falsos positivos**;
 - o SQL bloqueia `DROP`, `DELETE`, `UPDATE`, múltiplos comandos etc.;
 - o loop do agente é testado com um **LLM simulado** (executa ferramentas, se recupera de erros e respeita o limite de passos);
+- o verificador de números aprova a execução real gravada e **pega números adulterados**;
 - os schemas das ferramentas são compatíveis com as restrições do Gemini (sem `properties` vazio nem `default`), e campos extras do provedor, como a *thought signature*, são preservados entre chamadas.
 
-**Evals do agente (`evals/`):** 6 perguntas reais com critérios automáticos. A resposta precisa citar as conclusões certas, não pode citar as erradas e tem que ter usado as ferramentas (ou seja, buscado o dado em vez de chutar).
+**Evals do agente (`evals/`):** 6 perguntas reais com critérios automáticos. A resposta precisa citar as conclusões certas, não pode citar as erradas e tem que ter usado as ferramentas (ou seja, buscado o dado em vez de chutar). Cada resposta também passa pelo verificador de números, e o relatório final mostra quantos números estavam fundamentados nos dados.
 
 ```bash
 python -m evals.rodar_evals --provedor gemini
@@ -98,6 +112,9 @@ copiloto/
   agente.py       # loop de tool calling multi-provedor (Anthropic / OpenAI-compatível)
   prompts.py      # system prompt: método de investigação e formato da resposta
   relatorio.py    # relatório semanal determinístico (baseline sem IA)
+  verificador.py  # confere se cada número da resposta aparece nos dados
+  demo_gravada.json  # execução real gravada, reproduzida no app sem chave
+  testar.py       # teste rápido com um LLM real: python -m copiloto.testar
 app.py            # interface Streamlit: painel, chat com o agente, relatório
 evals/            # avaliação automática do agente
 tests/            # testes das ferramentas e do loop do agente

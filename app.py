@@ -7,7 +7,9 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from datetime import timedelta
+from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
@@ -15,7 +17,9 @@ import streamlit as st
 
 from copiloto.agente import PROVEDORES, Agente, Passo, criar_backend
 from copiloto.ferramentas import _df, _hoje, calcular_kpis, detectar_anomalias
+from copiloto.ferramentas import executar_ferramenta
 from copiloto.relatorio import PERGUNTA_RELATORIO, relatorio_deterministico
+from copiloto.verificador import verificar
 
 VERMELHO = "#EA1D2C"
 CINZA = "#9AA0A6"
@@ -82,6 +86,50 @@ def mostrar_passos(passos: list[Passo]) -> None:
                 st.text(p.resultado[:2000])
 
 
+def mostrar_verificacao(texto: str, passos: list[Passo]) -> None:
+    v = verificar(texto, [p.resultado for p in passos])
+    if not v.total:
+        return
+    icone = "✅" if not v.nao_encontrados else "⚠️"
+    with st.expander(f"{icone} Verificação automática: {v.resumo()}"):
+        st.caption("Cada número da resposta é procurado nos resultados das ferramentas. "
+                   "Um número não encontrado pode ser uma conta feita pelo modelo ou uma alucinação: vale revisar.")
+        if v.nao_encontrados:
+            for n in v.nao_encontrados:
+                st.markdown(f"- **{n.texto}** não aparece nos dados → _…{n.contexto}…_")
+        else:
+            st.markdown("Todos os números conferem: " + ", ".join(f"`{n.texto}`" for n in v.conferidos))
+
+
+@st.cache_data
+def carregar_demo() -> dict:
+    return json.loads((Path(__file__).parent / "copiloto" / "demo_gravada.json").read_text(encoding="utf-8"))
+
+
+def reproduzir_demo() -> None:
+    """Reproduz uma execução real gravada: as ferramentas rodam de verdade,
+    a resposta é a que o modelo escreveu naquela execução."""
+    demo = carregar_demo()
+    st.session_state.historico.append({"role": "user", "content": demo["pergunta"]})
+    with st.chat_message("user"):
+        st.markdown(demo["pergunta"])
+    with st.chat_message("assistant", avatar="🛵"):
+        status = st.status("Reproduzindo a investigação…", expanded=True)
+        passos = []
+        for p in demo["passos"]:
+            t0 = time.time()
+            resultado = executar_ferramenta(p["ferramenta"], p["argumentos"])
+            passos.append(Passo(p["ferramenta"], p["argumentos"], resultado, int((time.time() - t0) * 1000)))
+            status.write(f"🔧 `{p['ferramenta']}` {json.dumps(p['argumentos'], ensure_ascii=False)}")
+            time.sleep(0.35)
+        status.update(label=f"Execução real gravada · {demo['modelo']} · {len(passos)} ferramentas · {demo['duracao_s']}s", state="complete", expanded=False)
+        st.markdown(demo["resposta"])
+        st.caption(f"🎬 {demo['descricao']}")
+        mostrar_passos(passos)
+        mostrar_verificacao(demo["resposta"], passos)
+    st.session_state.historico.append({"role": "assistant", "content": demo["resposta"], "passos": passos, "demo": True})
+
+
 aba_painel, aba_chat, aba_rel = st.tabs(["📊 Painel", "🤖 Copiloto", "📝 Relatório semanal"])
 
 # ---------------------------------------------------------------------------
@@ -134,13 +182,22 @@ with aba_chat:
         st.session_state.historico = []  # [{"role", "content", "passos"}]
 
     if not chave:
-        st.info("Informe uma chave de API na barra lateral para conversar com o agente. Sem chave, o **Painel** e o **Relatório semanal (modo sem IA)** continuam funcionando.")
+        st.info("Informe uma chave de API na barra lateral para conversar com o agente. "
+                "Sem chave, você pode ver uma **execução real gravada** logo abaixo, e o **Painel** e o "
+                "**Relatório semanal (modo sem IA)** continuam funcionando.")
 
     for m in st.session_state.historico:
         with st.chat_message(m["role"], avatar="🛵" if m["role"] == "assistant" else None):
             st.markdown(m["content"])
+            if m.get("demo"):
+                st.caption(f"🎬 {carregar_demo()['descricao']}")
             if m.get("passos"):
                 mostrar_passos(m["passos"])
+                mostrar_verificacao(m["content"], m["passos"])
+
+    if not st.session_state.historico and st.button("▶️ Ver uma execução real do agente (não precisa de chave)", type="primary"):
+        reproduzir_demo()
+        st.stop()
 
     sugestao = None
     if not st.session_state.historico:
@@ -168,6 +225,7 @@ with aba_chat:
             status.update(label=f"Concluído em {resp.duracao_s}s · {len(resp.passos)} ferramentas · {resp.modelo}", state="complete", expanded=False)
             st.markdown(resp.texto)
             mostrar_passos(resp.passos)
+            mostrar_verificacao(resp.texto, resp.passos)
         st.session_state.historico.append({"role": "assistant", "content": resp.texto, "passos": resp.passos})
 
 # ---------------------------------------------------------------------------
