@@ -2,7 +2,7 @@
 
 **Um agente de IA que investiga a operação de delivery como um analista sênior faria:** ele descobre o que piorou, separa causa de restaurante, de logística e de evento externo, traz a voz do cliente e recomenda ações por time, sempre com números tirados dos dados, nunca inventados.
 
-> ✅ testes automatizados no GitHub Actions &nbsp;·&nbsp; 🧠 funciona com Claude, GPT ou Gemini &nbsp;·&nbsp; 🔎 verifica os próprios números
+> 🔗 **[Abrir a demo online](https://copiloto-ops-delivery.streamlit.app)** &nbsp;·&nbsp; ✅ testes automatizados no GitHub Actions &nbsp;·&nbsp; 🧠 funciona com Claude, GPT ou Gemini &nbsp;·&nbsp; 🔎 verifica os próprios números
 
 ![Demonstração: o agente investiga a semana e todos os números da resposta são conferidos com os dados](docs/demo.gif)
 
