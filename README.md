@@ -2,7 +2,7 @@
 
 **Um agente de IA que investiga a operação de delivery como um analista sênior faria:** ele descobre o que piorou, separa causa de restaurante, de logística e de evento externo, traz a voz do cliente e recomenda ações por time, sempre com números tirados dos dados, nunca inventados.
 
-> 🔗 **Demo online:** _[cole aqui o link do Streamlit Cloud]_ &nbsp;·&nbsp; ✅ testes automatizados no GitHub Actions &nbsp;·&nbsp; 🧠 funciona com Claude, GPT ou Gemini
+> ✅ testes automatizados no GitHub Actions &nbsp;·&nbsp; 🧠 funciona com Claude, GPT ou Gemini
 
 ![Painel](docs/painel.png)
 
@@ -72,14 +72,10 @@ flowchart LR
 python -m evals.rodar_evals --provedor gemini
 ```
 
-| Modelo | Acerto nas evals |
-|---|---|
-| _rode e preencha_ | _x/6_ |
-
 ## Rodando localmente
 
 ```bash
-git clone https://github.com/SEU_USUARIO/copiloto-ops-delivery
+git clone https://github.com/Wide2357/copiloto-ops-delivery
 cd copiloto-ops-delivery
 pip install -r requirements.txt
 streamlit run app.py          # a base de dados é gerada sozinha na primeira execução
@@ -116,6 +112,6 @@ tests/            # testes das ferramentas e do loop do agente
 
 ---
 
-Feito por **Willian Deryk**, estudante de Ciência e Tecnologia na UFABC e estagiário de Operations Support (Supply Chain) na Sanofi. &nbsp;[LinkedIn](https://linkedin.com/in/SEU_LINKEDIN)
+Feito por **Willian Deryk**, estudante de Ciência e Tecnologia na UFABC e estagiário de Operations Support (Supply Chain) na Sanofi. &nbsp;[LinkedIn](https://linkedin.com/in/willian-deryk)
 
 > Os dados são 100% sintéticos, gerados para este projeto. Nomes de restaurantes são fictícios.
